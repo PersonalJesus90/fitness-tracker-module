@@ -1,6 +1,7 @@
 package daysteps
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -19,44 +20,33 @@ const (
 
 func parsePackage(data string) (int, time.Duration, error) {
 
-	if data == "" {
-		log.Printf("Ошибка: пустая строка\n")
-		return 0, 0, fmt.Errorf("пустая строка данных")
-	}
-
-	for _, ch := range data {
-		if ch == ' ' {
-			log.Printf("Ошибка: содержит пробел\n")
-			return 0, 0, fmt.Errorf("Недопустимые пробелы в данных")
-		}
-
-	}
+	ErrInvalidFormat := errors.New("invalid string format")
 
 	parts := strings.Split(data, ",")
 
 	if len(parts) != 2 {
-		log.Printf("Ошибка: некорректная длинна данных\n")
-		return 0, 0, fmt.Errorf("Некорректная длинна данных")
+		log.Printf("error: incorrect length of data\n")
+		return 0, 0, ErrInvalidFormat
 	}
 
 	steps, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return 0, 0, fmt.Errorf("Некорректное количество шагов")
+		return 0, 0, ErrInvalidFormat
 	}
 
 	if steps <= 0 {
-		log.Printf("Ошибка: некорректное количество шагов\n")
-		return 0, 0, fmt.Errorf("Количество шагов должно быть положительным")
+		log.Printf("error: incorrect number of steps\n")
+		return 0, 0, ErrInvalidFormat
 	}
 
 	duration, err := time.ParseDuration(parts[1])
 	if err != nil {
-		return 0, 0, fmt.Errorf("Некорретный парсинг продолжительности прогулки")
+		return 0, 0, ErrInvalidFormat
 	}
 
 	if duration <= 0 {
-		log.Printf("Ошибка: некорректный формат шагов\n")
-		return 0, 0, fmt.Errorf("Продолжительность прогулки должна быть положительной")
+		log.Printf("error: incorrect step format\n")
+		return 0, 0, ErrInvalidFormat
 	}
 
 	return steps, duration, nil
@@ -66,7 +56,7 @@ func DayActionInfo(data string, weight, height float64) string {
 
 	steps, duration, err := parsePackage(data)
 	if err != nil {
-		fmt.Println("Ошибка: при парсинге данных:", err)
+		fmt.Println("error parsing data:", err)
 		return ""
 	}
 
@@ -76,7 +66,7 @@ func DayActionInfo(data string, weight, height float64) string {
 
 	calories, err := spentcalories.WalkingSpentCalories(steps, weight, height, duration)
 	if err != nil {
-		fmt.Println("Ошибка: парсинге данных:", err)
+		fmt.Println("error parsing data:", err)
 		return ""
 	}
 
